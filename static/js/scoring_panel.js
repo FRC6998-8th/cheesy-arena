@@ -39,11 +39,9 @@ const handleMatchLoad = function (data) {
   if (alliance === "red") {
     $(".team-1 .team-num").text(data.Match.Red1);
     $(".team-2 .team-num").text(data.Match.Red2);
-    $(".team-3 .team-num").text(data.Match.Red3);
   } else {
     $(".team-1 .team-num").text(data.Match.Blue1);
     $(".team-2 .team-num").text(data.Match.Blue2);
-    $(".team-3 .team-num").text(data.Match.Blue3);
   }
 };
 
@@ -73,8 +71,11 @@ const addFoul = function (alliance, isMajor) {
   const foulType = `${alliance}-${isMajor ? "major" : "minor"}`;
   localFoulCounts[foulType] += 1;
   renderLocalFoulCounts();
-  websocket.send("addFoul", {Alliance: alliance, IsMajor: isMajor});
+  websocket.send("addFoul", { Alliance: alliance, IsMajor: isMajor });
 }
+
+// Expose functions used by inline onclick handlers so templates can call them.
+window.addFoul = addFoul;
 
 // Handles a websocket message to update the match status.
 const handleMatchTime = function (data) {
@@ -116,13 +117,13 @@ const updateUIMode = function () {
 
 const endgameStatusNames = [
   "None",
-  "Level 1",
-  "Level 2",
-  "Level 3",
+  "Park",
+  "Complete",
 ];
 
 // Handles a websocket message to update the realtime scoring fields.
 const handleRealtimeScore = function (data) {
+  console.debug("realtimeScore received", data);
   let realtimeScore;
   if (alliance === "red") {
     realtimeScore = data.Red;
@@ -131,7 +132,7 @@ const handleRealtimeScore = function (data) {
   }
   const score = realtimeScore.Score;
 
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 2; i++) {
     const i1 = i + 1;
     for (let j = 0; j < endgameStatusNames.length; j++) {
       $(`#auto-input-${i1} .tower-${j}`).attr("data-selected", j == score.AutoTowerStatuses[i]);
@@ -142,15 +143,43 @@ const handleRealtimeScore = function (data) {
   const redFouls = data.Red.Score.Fouls || [];
   const blueFouls = data.Blue.Score.Fouls || [];
   renderGlobalFoulCounts(redFouls, blueFouls);
+  // Render the Auto (hardware) and Manual fuel totals for each shift-specific block (Auto Park, Endgame Park),
+  // scoped to that block's own data-shift index so the two sections don't overwrite each other.
+  const shiftCounts = (score.Hub && score.Hub.ShiftCounts) || [];
+  const manualShiftCounts = (score.Hub && score.Hub.ManualShiftCounts) || [];
+  $(".fuel-totals").each(function () {
+    const shift = parseInt($(this).attr("data-shift"), 10);
+    const autoCount = shiftCounts[shift] || 0;
+    const manualCount = manualShiftCounts[shift] || 0;
+    $(this).find(".auto-fuel-total").text(`Auto: ${autoCount}`);
+    $(this).find(".manual-fuel-total").text(`Manual: ${manualCount}`);
+  });
 };
 
 // Websocket message senders for various buttons
 const handleAutoTowerClick = function (teamPosition, autoTowerStatus) {
-  websocket.send("autoTower", {TeamPosition: teamPosition, AutoTowerStatus: autoTowerStatus});
+  websocket.send("autoPark", { TeamPosition: teamPosition, AutoParkStatus: autoTowerStatus });
 }
 const handleEndgameClick = function (teamPosition, endgameTowerStatus) {
-  websocket.send("endgame", {TeamPosition: teamPosition, EndgameTowerStatus: endgameTowerStatus});
+  websocket.send("endgamePark", { TeamPosition: teamPosition, EndgameParkStatus: endgameTowerStatus });
 }
+
+// Send manual fuel delta (positive or negative) from the UI.
+const addManualFuelDelta = function (delta) {
+  websocket.send("manualFuel", { Count: delta });
+}
+
+// Expose handlers for inline onclicks
+window.handleAutoTowerClick = handleAutoTowerClick;
+window.handleEndgameClick = handleEndgameClick;
+window.addManualFuelDelta = addManualFuelDelta;
+
+// Send a manual fuel delta for a specific shift index (0=Auto, 6=Endgame, etc.).
+const addManualFuelShift = function (shiftIndex, delta) {
+  console.debug("sending manualFuel", { Count: delta, Shift: shiftIndex });
+  websocket.send("manualFuel", { Count: delta, Shift: shiftIndex });
+}
+window.addManualFuelShift = addManualFuelShift;
 
 // Sends a websocket message to indicate that the score for this alliance is ready.
 const commitMatchScore = function () {
@@ -161,6 +190,8 @@ const commitMatchScore = function () {
   commitAvailable = false;
   updateUIMode();
 };
+
+window.commitMatchScore = commitMatchScore;
 
 $(function () {
   position = window.location.href.split("/").slice(-1)[0];

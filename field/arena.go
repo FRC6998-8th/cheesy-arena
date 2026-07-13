@@ -7,13 +7,6 @@ package field
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/game"
-	"github.com/Team254/cheesy-arena/led"
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/Team254/cheesy-arena/network"
-	"github.com/Team254/cheesy-arena/partner"
-	"github.com/Team254/cheesy-arena/playoff"
-	"github.com/Team254/cheesy-arena/plc"
 	"log"
 	"math"
 	"math/rand"
@@ -22,6 +15,14 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/led"
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/network"
+	"github.com/Team254/cheesy-arena/partner"
+	"github.com/Team254/cheesy-arena/playoff"
+	"github.com/Team254/cheesy-arena/plc"
 )
 
 const (
@@ -105,6 +106,7 @@ type Arena struct {
 	NextFoulId                        int
 	DriverStationUdpSocket            *net.UDPConn
 	redWonAuto                        bool
+	HubColors                         map[string]HubColor
 }
 
 type AllianceStation struct {
@@ -133,6 +135,8 @@ func NewArena(dbPath string) (*Arena, error) {
 	arena.AllianceStations["B1"] = new(AllianceStation)
 	arena.AllianceStations["B2"] = new(AllianceStation)
 	arena.AllianceStations["B3"] = new(AllianceStation)
+
+	arena.HubColors = make(map[string]HubColor)
 
 	arena.Displays = make(map[string]*Display)
 
@@ -704,6 +708,8 @@ func (arena *Arena) Update() {
 		arena.Plc.ResetMatch()
 		arena.FieldVolunteers = false
 		arena.FieldReset = false
+		arena.SetHubColor("red", HubOff)
+		arena.SetHubColor("blue", HubOff)
 	case AutoPeriod:
 		auto = true
 		enabled = true
@@ -802,6 +808,10 @@ func (arena *Arena) Update() {
 	arena.BlueRealtimeScore.ActiveDurationSec = int(math.Ceil(blueActiveDuration.Seconds()))
 
 	arena.updateHubLeds(currentTime)
+
+	// Drive the tablet hub color displays. This is intentionally separate from handlePlcInputOutput() below, since
+	// it must keep working even when no physical PLC is connected.
+	arena.updateHubDisplayColors(currentTime)
 
 	// Handle field sensors/lights/actuators.
 	arena.handlePlcInputOutput()
@@ -1102,7 +1112,7 @@ func (arena *Arena) checkCanStartMatch() error {
 		return fmt.Errorf("cannot start match while there is a match still in progress or with results pending")
 	}
 
-	err := arena.checkAllianceStationsReady("R1", "R2", "R3", "B1", "B2", "B3")
+	err := arena.checkAllianceStationsReady("R1", "R2", "B1", "B2")
 	if err != nil {
 		return err
 	}
@@ -1199,6 +1209,35 @@ func (arena *Arena) handleAutoWinner() {
 	}
 }
 
+// updateHubDisplayColors drives the tablet hub color displays based on match state and shift timing. Unlike the
+// physical PLC-driven hub lights/motors, this must run unconditionally -- it's a pure software indicator and must
+// not depend on whether a physical PLC is connected/enabled.
+func (arena *Arena) updateHubDisplayColors(currentTime time.Time) {
+	switch arena.MatchState {
+	case PreMatch, TimeoutActive, PostTimeout:
+		// Outside of a match, leave the color under the control of SignalVolunteers()/SignalReset(), except to
+		// reset it to off once all teams become ready.
+		redAllianceReady := arena.checkAllianceStationsReady("R1", "R2") == nil
+		blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2") == nil
+		if redAllianceReady && blueAllianceReady {
+			arena.SetHubColor("red", HubOff)
+			arena.SetHubColor("blue", HubOff)
+		}
+	case AutoPeriod, PausePeriod, TeleopPeriod:
+		redHubActive, blueHubActive := arena.getHubActiveStates(currentTime)
+		if redHubActive {
+			arena.SetHubColor("red", HubRed)
+		} else {
+			arena.SetHubColor("red", HubOff)
+		}
+		if blueHubActive {
+			arena.SetHubColor("blue", HubBlue)
+		} else {
+			arena.SetHubColor("blue", HubOff)
+		}
+	}
+}
+
 // Updates the score given new input information from the field PLC, and actuates PLC outputs accordingly.
 func (arena *Arena) handlePlcInputOutput() {
 	if !arena.Plc.IsEnabled() {
@@ -1227,8 +1266,8 @@ func (arena *Arena) handlePlcInputOutput() {
 	arena.Plc.SetAwardsModeLight(arena.AllianceStationDisplayMode == "logo")
 
 	// Handle in-match PLC functions.
-	redAllianceReady := arena.checkAllianceStationsReady("R1", "R2", "R3") == nil
-	blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2", "B3") == nil
+	redAllianceReady := arena.checkAllianceStationsReady("R1", "R2") == nil
+	blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2") == nil
 
 	// Handle the evergreen PLC functions: stack lights, stack buzzer, and field reset light.
 	switch arena.MatchState {
@@ -1283,6 +1322,35 @@ func (arena *Arena) handlePlcInputOutput() {
 
 	redHubLight, blueHubLight := arena.getHubLightStates(currentTime)
 	arena.Plc.SetHubLights(redHubLight, blueHubLight)
+}
+
+// getHubActiveStates returns whether the hub is currently active for each alliance, ignoring the blink modulation
+// that getHubLightStates() applies for the physical field LEDs (used to warn nearby teams that exclusive access is
+// about to change). Tablet color displays should render a steady color rather than flickering, so this is what
+// updateHubDisplayColors() uses instead of getHubLightStates().
+func (arena *Arena) getHubActiveStates(currentTime time.Time) (bool, bool) {
+	switch arena.MatchState {
+	case AutoPeriod, PausePeriod:
+		return true, true
+	case TeleopPeriod:
+		redHub := &arena.RedRealtimeScore.CurrentScore.Hub
+		blueHub := &arena.BlueRealtimeScore.CurrentScore.Hub
+		shift, _, _, ok := redHub.GetCurrentShiftTiming(arena.MatchStartTime, currentTime)
+		if !ok {
+			return false, false
+		}
+
+		if shift == game.ShiftTransition {
+			// Both alliances are active during the transition shift, same as Auto/Endgame.
+			return true, true
+		}
+
+		redActiveRemaining, _ := redHub.GetActiveShiftTiming(arena.MatchStartTime, currentTime)
+		blueActiveRemaining, _ := blueHub.GetActiveShiftTiming(arena.MatchStartTime, currentTime)
+		return redActiveRemaining > 0, blueActiveRemaining > 0
+	default:
+		return false, false
+	}
 }
 
 func (arena *Arena) getHubLightStates(currentTime time.Time) (bool, bool) {
@@ -1362,6 +1430,8 @@ func (arena *Arena) SignalVolunteers() {
 	arena.AllianceStationDisplayMode = "signalCount"
 	arena.AllianceStationDisplayModeNotifier.Notify()
 	arena.Leds.SetMode(led.PurpleMode, led.PurpleMode)
+	arena.SetHubColor("red", HubPurple)
+	arena.SetHubColor("blue", HubPurple)
 }
 
 // Set the field lights and team signs to green, if not in a match.
@@ -1379,6 +1449,8 @@ func (arena *Arena) SignalReset() {
 	arena.AllianceStationDisplayMode = "fieldReset"
 	arena.AllianceStationDisplayModeNotifier.Notify()
 	arena.Leds.SetMode(led.GreenMode, led.GreenMode)
+	arena.SetHubColor("red", HubGreen)
+	arena.SetHubColor("blue", HubGreen)
 }
 
 func (arena *Arena) handleSounds(matchTimeSec float64) {
