@@ -19,7 +19,7 @@ import (
 
 const (
 	schedulesDir  = "schedules"
-	TeamsPerMatch = 6
+	TeamsPerMatch = 4
 )
 
 var schedulePerm = rand.Perm
