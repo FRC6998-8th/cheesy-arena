@@ -106,17 +106,13 @@ var handleMatchLoad = function (data) {
 
   setTeamCard("red", 1, data.Teams["R1"]);
   setTeamCard("red", 2, data.Teams["R2"]);
-  setTeamCard("red", 3, data.Teams["R3"]);
   setTeamCard("blue", 1, data.Teams["B1"]);
   setTeamCard("blue", 2, data.Teams["B2"]);
-  setTeamCard("blue", 3, data.Teams["B3"]);
 
   $("#redScoreSummary .team-1").text(data.Teams["R1"]?.Id || "");
   $("#redScoreSummary .team-2").text(data.Teams["R2"]?.Id || "");
-  $("#redScoreSummary .team-3").text(data.Teams["R3"]?.Id || "");
   $("#blueScoreSummary .team-1").text(data.Teams["B1"]?.Id || "");
   $("#blueScoreSummary .team-2").text(data.Teams["B2"]?.Id || "");
-  $("#blueScoreSummary .team-3").text(data.Teams["B3"]?.Id || "");
 };
 
 // Handles a websocket message to update the match status.
@@ -134,9 +130,8 @@ const handleMatchTime = function (data) {
 
 const towerStatusNames = [
   "None",
-  "Level 1",
-  "Level 2",
-  "Level 3",
+  "Park",
+  "Complete",
 ];
 
 const setTowerStatus = function (selector, status) {
@@ -162,19 +157,23 @@ const handleRealtimeScore = function (data) {
 
   for (alliance of ["red", "blue"]) {
     let score;
+    let scoreSummary;
     if (alliance === "red") {
       score = data.Red.Score;
+      scoreSummary = data.Red.ScoreSummary;
     } else {
       score = data.Blue.Score;
+      scoreSummary = data.Blue.ScoreSummary;
     }
 
     let scoreRoot = `${alliance}ScoreSummary`;
     setTowerStatus(`#${scoreRoot} .team-1-auto-tower`, score.AutoTowerStatuses[0]);
     setTowerStatus(`#${scoreRoot} .team-2-auto-tower`, score.AutoTowerStatuses[1]);
-    setTowerStatus(`#${scoreRoot} .team-3-auto-tower`, score.AutoTowerStatuses[2]);
     setTowerStatus(`#${scoreRoot} .team-1-endgame-tower`, score.EndgameTowerStatuses[0]);
     setTowerStatus(`#${scoreRoot} .team-2-endgame-tower`, score.EndgameTowerStatuses[1]);
-    setTowerStatus(`#${scoreRoot} .team-3-endgame-tower`, score.EndgameTowerStatuses[2]);
+
+    $(`#${scoreRoot} .fuel-count`).text(scoreSummary.NumFuel);
+    $(`#${scoreRoot} .total-score`).text(scoreSummary.Score);
   }
 }
 
@@ -200,10 +199,8 @@ const handleScoringStatus = function (data) {
 const handleArenaStatus = function (data) {
   setTeamBypassedStatus("red1", data.AllianceStations["R1"]?.Bypass);
   setTeamBypassedStatus("red2", data.AllianceStations["R2"]?.Bypass);
-  setTeamBypassedStatus("red3", data.AllianceStations["R3"]?.Bypass);
   setTeamBypassedStatus("blue1", data.AllianceStations["B1"]?.Bypass);
   setTeamBypassedStatus("blue2", data.AllianceStations["B2"]?.Bypass);
-  setTeamBypassedStatus("blue3", data.AllianceStations["B3"]?.Bypass);
 };
 
 const setTeamBypassedStatus = function (station, bypassed) {

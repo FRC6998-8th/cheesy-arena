@@ -11,12 +11,12 @@ UI for entering and tracking fouls and red/yellow cards.
   <div id="cards" class="headRef-dependent">
     <h3 id="teamTitle">Red/Yellow Cards</h3>
     <div class="alliance-cards" id="redCards">
-      {{range $i := seq 3}}
+      {{range $i := seq 2}}
       {{template "teamCard" dict "alliance" "red" "position" $i}}
       {{end}}
     </div>
     <div class="alliance-cards" id="blueCards">
-      {{range $i := seq 3}}
+      {{range $i := seq 2}}
       {{template "teamCard" dict "alliance" "blue" "position" $i}}
       {{end}}
     </div>
@@ -71,14 +71,14 @@ UI for entering and tracking fouls and red/yellow cards.
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title" id="confirmBypassTitle">Disable?</h4>
+        <h4 class="modal-title" id="confirmBypassTitle">Enable?</h4>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-footer">
         <form class="form-horizontal">
           <button type="button" class="btn btn-lg btn-secondary" data-bs-dismiss="modal">Cancel</button>
           <button type="button" class="btn btn-lg btn-danger ms-2" onclick="toggleBypass();" data-bs-dismiss="modal" id="confirmBypassAction">
-            Disable
+            Enable
           </button>
         </form>
       </div>
@@ -104,16 +104,19 @@ UI for entering and tracking fouls and red/yellow cards.
   <div class="placeholder"></div>
   <div class="team-1">0</div>
   <div class="team-2">0</div>
-  <div class="team-3">0</div>
 
-  <div class="label">Auto Tower</div>
+  <div class="label">Auto Park</div>
   <div class="tower-status team-1-auto-tower" data-status="0">None</div>
   <div class="tower-status team-2-auto-tower" data-status="0">None</div>
-  <div class="tower-status team-3-auto-tower" data-status="0">None</div>
 
-  <div class="label">Endgame Tower</div>
+  <div class="label">Endgame Park</div>
   <div class="tower-status team-1-endgame-tower" data-status="0">None</div>
   <div class="tower-status team-2-endgame-tower" data-status="0">None</div>
-  <div class="tower-status team-3-endgame-tower" data-status="0">None</div>
+
+  <div class="label">Fuel</div>
+  <div class="wide-row fuel-count">0</div>
+
+  <div class="label">Total</div>
+  <div class="wide-row total-score">0</div>
 </div>
 {{end}}
