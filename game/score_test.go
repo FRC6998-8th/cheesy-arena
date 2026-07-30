@@ -19,8 +19,8 @@ func TestScoreSummary(t *testing.T) {
 	// Auto: one Complete -> 12
 	assert.Equal(t, 12, redSummary.AutoTowerPoints)
 	assert.Equal(t, 70, redSummary.TeleopFuelPoints)
-	// Endgame: two park/complete -> 2*5 = 10
-	assert.Equal(t, 10, redSummary.TeleopTowerPoints)
+	// Endgame: two park/complete -> 2*10 = 20
+	assert.Equal(t, 20, redSummary.TeleopTowerPoints)
 	assert.Equal(t, 88, redSummary.NumFuel)
 	assert.Equal(t, 0, redSummary.NumFuelPostMatch)
 	assert.Equal(t, 100, redSummary.NumFuelGoal)
@@ -31,7 +31,7 @@ func TestScoreSummary(t *testing.T) {
 	assert.Equal(t, false, redSummary.PlayoffDq)
 	assert.Equal(t, false, redSummary.EnergizedBonusRankingPoint)
 	assert.Equal(t, false, redSummary.SuperchargedBonusRankingPoint)
-	// Traversal now requires sum of auto(12/5) + teleop (5 each) to meet threshold.
+	// Traversal now requires sum of auto(12/5) + teleop (5/10 each) to meet threshold.
 	assert.Equal(t, false, redSummary.TraversalBonusRankingPoint)
 	assert.Equal(t, 0, redSummary.BonusRankingPoints)
 	assert.Equal(t, 0, redSummary.NumOpponentMajorFouls)
@@ -338,7 +338,7 @@ func TestScoreBonusRankingPointDisqualificationFromFouls(t *testing.T) {
 				AutoTowerStatuses:    [3]TowerStatus{TowerLevel1, TowerNone, TowerNone},
 				EndgameTowerStatuses: [3]TowerStatus{TowerLevel3, TowerLevel3, TowerNone},
 			},
-			// With new scoring rules (Park=5, Complete auto=12, endgame counts 5),
+			// With new scoring rules (Park=5, Complete auto=12, endgame Park=5 , Complete = 10),
 			// traversal/energized expectations differ from original rules.
 			expectedEnergizedBonus:   true,
 			expectedSupercharged:     true,
