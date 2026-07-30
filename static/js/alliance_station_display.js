@@ -77,12 +77,23 @@ var handleMatchLoad = function (data) {
 var handleArenaStatus = function (data) {
   stationStatus = data.AllianceStations[station];
   var blink = false;
-  if (stationStatus && stationStatus.Bypass) {
-    $("#match").attr("data-status", "");
-  } else if (stationStatus) {
-    if (!stationStatus.DsConn || !stationStatus.DsConn.DsLinked) {
-      $("#match").attr("data-status", station[0]);
+
+  if (stationStatus) {
+    // 取得當前畫面上的狀態，作為比對基準
+    var currentStatus = $("#match").attr("data-status");
+
+    if (stationStatus.Bypass) {
+      // Bypass 狀態：維持紅/藍底色。只有狀態不一樣時才執行 DOM 更新
+      if (currentStatus !== station[0]) {
+        $("#match").attr("data-status", station[0]);
+      }
+    } else if (!stationStatus.DsConn || !stationStatus.DsConn.DsLinked) {
+      // 未連線狀態。一樣檢查後才更新
+      if (currentStatus !== station[0]) {
+        $("#match").attr("data-status", station[0]);
+      }
     } else if (!stationStatus.DsConn.RobotLinked) {
+      // 正在連線中 (Robot 未連上)，交給計時器處理閃爍
       blink = true;
       if (!blinkInterval) {
         blinkInterval = setInterval(function () {
@@ -91,10 +102,14 @@ var handleArenaStatus = function (data) {
         }, 250);
       }
     } else {
-      $("#match").attr("data-status", "");
+      // 完全連線狀態。清除警告底色，避免重複寫入空字串
+      if (currentStatus !== "") {
+        $("#match").attr("data-status", "");
+      }
     }
   }
 
+  // 處理計時器的清除
   if (!blink && blinkInterval) {
     clearInterval(blinkInterval);
     blinkInterval = null;
