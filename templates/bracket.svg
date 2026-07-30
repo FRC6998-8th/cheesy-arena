@@ -467,9 +467,11 @@
   <text id="match_title" x="0" y="17.3691">{{.Id}}</text>
   {{if .RedAlliance}}
     <text x="22" y="70" class="alliancenum r">{{.RedAlliance.Id}}</text>
-    {{if ge (len .RedAlliance.TeamIds) 3}}
+    {{if ge (len .RedAlliance.TeamIds) 2}}
       <text x="85" y="51" class="teamnum r">{{index .RedAlliance.TeamIds 0}}</text>
       <text x="165" y="51" class="teamnum r">{{index .RedAlliance.TeamIds 1}}</text>
+    {{end}}
+    {{if ge (len .RedAlliance.TeamIds) 3}}
       <text x="85" y="81" class="teamnum r">{{index .RedAlliance.TeamIds 2}}</text>
     {{end}}
     {{if ge (len .RedAlliance.TeamIds) 4}}
@@ -480,9 +482,11 @@
   {{end}}
   {{if .BlueAlliance}}
     <text x="22" y="135" class="alliancenum b">{{.BlueAlliance.Id}}</text>
-    {{if ge (len .BlueAlliance.TeamIds) 3}}
+    {{if ge (len .BlueAlliance.TeamIds) 2}}
       <text x="85" y="116" class="teamnum b">{{index .BlueAlliance.TeamIds 0}}</text>
       <text x="165" y="116" class="teamnum b">{{index .BlueAlliance.TeamIds 1}}</text>
+    {{end}}
+    {{if ge (len .BlueAlliance.TeamIds) 3}}
       <text x="85" y="146" class="teamnum b">{{index .BlueAlliance.TeamIds 2}}</text>
     {{end}}
     {{if ge (len .BlueAlliance.TeamIds) 4}}
