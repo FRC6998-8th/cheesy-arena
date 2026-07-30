@@ -7,10 +7,11 @@ package tournament
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/game"
-	"github.com/Team254/cheesy-arena/model"
 	"sort"
 	"strconv"
+
+	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 )
 
 // Determines the rankings from the stored match results, and saves them to the database.
@@ -28,22 +29,22 @@ func CalculateRankings(database *model.Database, preservePreviousRank bool) (gam
 		if err != nil {
 			return nil, err
 		}
-		if !match.Red1IsSurrogate {
+		if match.Red1 != 0 && !match.Red1IsSurrogate {
 			addMatchResultToRankings(rankings, match.Red1, matchResult, true)
 		}
-		if !match.Red2IsSurrogate {
+		if match.Red2 != 0 && !match.Red2IsSurrogate {
 			addMatchResultToRankings(rankings, match.Red2, matchResult, true)
 		}
-		if !match.Red3IsSurrogate {
+		if match.Red3 != 0 && !match.Red3IsSurrogate {
 			addMatchResultToRankings(rankings, match.Red3, matchResult, true)
 		}
-		if !match.Blue1IsSurrogate {
+		if match.Blue1 != 0 && !match.Blue1IsSurrogate {
 			addMatchResultToRankings(rankings, match.Blue1, matchResult, false)
 		}
-		if !match.Blue2IsSurrogate {
+		if match.Blue2 != 0 && !match.Blue2IsSurrogate {
 			addMatchResultToRankings(rankings, match.Blue2, matchResult, false)
 		}
-		if !match.Blue3IsSurrogate {
+		if match.Blue3 != 0 && !match.Blue3IsSurrogate {
 			addMatchResultToRankings(rankings, match.Blue3, matchResult, false)
 		}
 	}

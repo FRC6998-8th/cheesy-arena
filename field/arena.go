@@ -1146,11 +1146,7 @@ func (arena *Arena) checkAllianceStationsReady(stations ...string) error {
 		if !allianceStation.aStopReset {
 			return fmt.Errorf("cannot start match if an autonomous stop has not been reset since the previous match")
 		}
-		if !allianceStation.Bypass {
-			if allianceStation.DsConn == nil || !allianceStation.DsConn.RobotLinked {
-				return fmt.Errorf("cannot start match until all robots are connected or bypassed")
-			}
-		}
+
 	}
 
 	return nil
