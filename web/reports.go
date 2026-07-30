@@ -9,16 +9,17 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/Team254/cheesy-arena/game"
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/Team254/cheesy-arena/playoff"
-	"github.com/Team254/cheesy-arena/tournament"
-	"github.com/jung-kurt/gofpdf"
 	"math"
 	"net/http"
 	"sort"
 	"strconv"
 	"time"
+
+	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/playoff"
+	"github.com/Team254/cheesy-arena/tournament"
+	"github.com/jung-kurt/gofpdf"
 )
 
 // Generates a CSV-formatted report of the qualification rankings.
@@ -436,7 +437,8 @@ func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	// The widths of the table columns in mm, stored here so that they can be referenced for each row.
-	colWidths := map[string]float64{"Time": 35, "Match": 40, "Team": 20}
+	// Show only two teams per alliance (Red1, Red2, Blue1, Blue2).
+	colWidths := map[string]float64{"Time": 35, "Match": 40, "Team": 24}
 	rowHeight := 6.5
 
 	pdf := newReportPdf()
@@ -450,10 +452,9 @@ func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request)
 	pdf.CellFormat(colWidths["Match"], rowHeight, "Match", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Team"], rowHeight, "Red 1", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Team"], rowHeight, "Red 2", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Team"], rowHeight, "Red 3", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Team"], rowHeight, "Blue 1", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Team"], rowHeight, "Blue 2", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Team"], rowHeight, "Blue 3", "1", 1, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Team"], rowHeight, "Blue 2", "1", 1, "C", true, 0, "")
+
 	pdf.SetFont("Arial", "", 10)
 	for _, match := range matches {
 		// Render break if there is one before this match.
@@ -470,8 +471,8 @@ func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request)
 		borderStr := "1"
 		alignStr := "CM"
 		surrogate := false
-		if match.Red1IsSurrogate || match.Red2IsSurrogate || match.Red3IsSurrogate ||
-			match.Blue1IsSurrogate || match.Blue2IsSurrogate || match.Blue3IsSurrogate {
+		if match.Red1IsSurrogate || match.Red2IsSurrogate ||
+			match.Blue1IsSurrogate || match.Blue2IsSurrogate {
 			// If the match contains surrogates, the row needs to be taller to fit some text beneath team numbers.
 			height = 5.0
 			borderStr = "LTR"
@@ -502,10 +503,8 @@ func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request)
 		pdf.CellFormat(colWidths["Match"], height, match.LongName, borderStr, 0, alignStr, false, 0, "")
 		pdf.CellFormat(colWidths["Team"], height, formatTeam(match.Red1), borderStr, 0, alignStr, false, 0, "")
 		pdf.CellFormat(colWidths["Team"], height, formatTeam(match.Red2), borderStr, 0, alignStr, false, 0, "")
-		pdf.CellFormat(colWidths["Team"], height, formatTeam(match.Red3), borderStr, 0, alignStr, false, 0, "")
 		pdf.CellFormat(colWidths["Team"], height, formatTeam(match.Blue1), borderStr, 0, alignStr, false, 0, "")
-		pdf.CellFormat(colWidths["Team"], height, formatTeam(match.Blue2), borderStr, 0, alignStr, false, 0, "")
-		pdf.CellFormat(colWidths["Team"], height, formatTeam(match.Blue3), borderStr, 1, alignStr, false, 0, "")
+		pdf.CellFormat(colWidths["Team"], height, formatTeam(match.Blue2), borderStr, 1, alignStr, false, 0, "")
 		if surrogate {
 			// Render the text that indicates which teams are surrogates.
 			height := 4.0
@@ -519,16 +518,10 @@ func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request)
 				colWidths["Team"], height, surrogateText(match.Red2IsSurrogate), "LBR", 0, "CT", false, 0, "",
 			)
 			pdf.CellFormat(
-				colWidths["Team"], height, surrogateText(match.Red3IsSurrogate), "LBR", 0, "CT", false, 0, "",
-			)
-			pdf.CellFormat(
 				colWidths["Team"], height, surrogateText(match.Blue1IsSurrogate), "LBR", 0, "CT", false, 0, "",
 			)
 			pdf.CellFormat(
-				colWidths["Team"], height, surrogateText(match.Blue2IsSurrogate), "LBR", 0, "CT", false, 0, "",
-			)
-			pdf.CellFormat(
-				colWidths["Team"], height, surrogateText(match.Blue3IsSurrogate), "LBR", 1, "CT", false, 0, "",
+				colWidths["Team"], height, surrogateText(match.Blue2IsSurrogate), "LBR", 1, "CT", false, 0, "",
 			)
 			pdf.SetFont("Arial", "", 10)
 		}

@@ -69,12 +69,20 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	summary.TeleopFuelPoints = score.Hub.GetTeleopActiveFuelCount()
 	summary.NumFuelPostMatch = score.Hub.GetShiftCount(ShiftPostMatch, true)
 	summary.NumFuel += summary.TeleopFuelPoints
-	// Endgame (post-match) parking/complete scoring. Both Park and Complete count as +5.
+	numTeleopRobots := 0
+
 	for _, status := range score.EndgameTowerStatuses {
-		switch status {
-		case TowerPark, TowerComplete:
+		if status == TowerComplete {
+			// Complete during endgame: +10 points (cap two robots).
+			summary.TeleopTowerPoints += 10
+			numTeleopRobots++
+		} else if status == TowerPark {
+			// Park during endgame: +5 points.
 			summary.TeleopTowerPoints += 5
-		default:
+			numTeleopRobots++
+		}
+		if numTeleopRobots == 2 {
+			break
 		}
 	}
 

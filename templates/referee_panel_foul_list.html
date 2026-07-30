@@ -16,11 +16,9 @@
     {{if eq .alliance "red"}}
     {{template "teamButton" dict "alliance" .alliance "index" .index "foul" .foul "teamId" .match.Red1}}
     {{template "teamButton" dict "alliance" .alliance "index" .index "foul" .foul "teamId" .match.Red2}}
-    {{template "teamButton" dict "alliance" .alliance "index" .index "foul" .foul "teamId" .match.Red3}}
     {{else}}
     {{template "teamButton" dict "alliance" .alliance "index" .index "foul" .foul "teamId" .match.Blue1}}
     {{template "teamButton" dict "alliance" .alliance "index" .index "foul" .foul "teamId" .match.Blue2}}
-    {{template "teamButton" dict "alliance" .alliance "index" .index "foul" .foul "teamId" .match.Blue3}}
     {{end}}
   </div>
   <select class="rule-select" onchange="updateFoulRule('{{.alliance}}', {{.index}}, parseInt(this.value));">

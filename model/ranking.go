@@ -6,8 +6,9 @@
 package model
 
 import (
-	"github.com/Team254/cheesy-arena/game"
 	"sort"
+
+	"github.com/Team254/cheesy-arena/game"
 )
 
 func (database *Database) CreateRanking(ranking *game.Ranking) error {
@@ -51,6 +52,9 @@ func (database *Database) ReplaceAllRankings(rankings game.Rankings) error {
 	}
 
 	for _, ranking := range rankings {
+		if ranking.TeamId == 0 {
+			continue
+		}
 		if err := database.CreateRanking(&ranking); err != nil {
 			return err
 		}

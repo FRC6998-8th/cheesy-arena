@@ -81,11 +81,14 @@ func (web *Web) scheduleGeneratePostHandler(w http.ResponseWriter, r *http.Reque
 		)
 		return
 	}
-	if len(teams) < 6 {
+	if len(teams) < tournament.TeamsPerMatch {
 		web.renderSchedule(
 			w,
 			r,
-			fmt.Sprintf("There are only %d teams. There must be at least 6 teams to generate a schedule.", len(teams)),
+			fmt.Sprintf(
+				"There are only %d teams. There must be at least %d teams to generate a schedule.",
+				len(teams), tournament.TeamsPerMatch,
+			),
 		)
 		return
 	}

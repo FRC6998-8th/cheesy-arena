@@ -25,7 +25,7 @@ var addBlock = function (startTime, numMatches, matchSpacingSec) {
   var endTime = moment(startTime + numMatches * matchSpacingSec * 1000);
   lastBlockNumber += 1;
   var matchSpacingMinSec = moment(matchSpacingSec * 1000).format("m:ss");
-  var block = blockTemplate({blockNumber: lastBlockNumber, matchSpacingMinSec: matchSpacingMinSec});
+  var block = blockTemplate({ blockNumber: lastBlockNumber, matchSpacingMinSec: matchSpacingMinSec });
   $("#blockContainer").append(block);
   newDateTimePicker("startTimePicker" + lastBlockNumber, startTime.toDate());
   newDateTimePicker("endTimePicker" + lastBlockNumber, endTime.toDate());
@@ -57,9 +57,9 @@ var updateStats = function () {
   $.each(blockMatches, function (k, v) {
     totalNumMatches += v;
   });
-  var matchesPerTeam = Math.floor(totalNumMatches * 6 / numTeams);
-  var numExcessMatches = totalNumMatches - Math.ceil(matchesPerTeam * numTeams / 6);
-  var nextLevelMatches = Math.ceil((matchesPerTeam + 1) * numTeams / 6) - totalNumMatches;
+  var matchesPerTeam = Math.floor(totalNumMatches * 4 / numTeams);
+  var numExcessMatches = totalNumMatches - Math.ceil(matchesPerTeam * numTeams / 4);
+  var nextLevelMatches = Math.ceil((matchesPerTeam + 1) * numTeams / 4) - totalNumMatches;
   $("#totalNumMatches").text(totalNumMatches);
   $("#matchesPerTeam").text(matchesPerTeam);
   $("#numExcessMatches").text(numExcessMatches);

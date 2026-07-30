@@ -236,7 +236,7 @@ h3 {
 
 #scoreSummary > div {
   display: grid;
-  grid-template-columns: 7.5vw repeat(3, 5.2vw);
+  grid-template-columns: 7.5vw repeat(2, 5.2vw);
   column-gap: 0.35vw;
   row-gap: 0.25vw;
   align-items: center;
@@ -247,7 +247,13 @@ h3 {
 }
 
 #scoreSummary .wide-row {
-  grid-column: span 3;
+  grid-column: span 2;
+  font-weight: bold;
+}
+
+#scoreSummary .fuel-count,
+#scoreSummary .total-score {
+  font-size: 1.1vw;
 }
 
 #scoreSummary .label {
