@@ -4,90 +4,98 @@
 package tournament
 
 import (
-	"fmt"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
-	"os"
-	"path/filepath"
 	"testing"
 	"time"
 )
 
-func TestMain(m *testing.M) {
-	os.Exit(m.Run())
-}
-
-func TestNonExistentSchedule(t *testing.T) {
-	teams := make([]model.Team, 5)
-	scheduleBlocks := []model.ScheduleBlock{{0, model.Test, time.Unix(0, 0).UTC(), 2, 60}}
-	_, err := BuildRandomSchedule(teams, scheduleBlocks, model.Test)
-	expectedErr := "No schedule template exists for 5 teams and 2 matches"
+func TestNotEnoughTeams(t *testing.T) {
+	teams := make([]model.Team, 3)
+	scheduleBlocks := []model.ScheduleBlock{{0, model.Practice, time.Unix(0, 0).UTC(), 2, 60}}
+	_, err := BuildRandomSchedule(teams, scheduleBlocks, model.Practice)
+	expectedErr := "need at least 4 teams to build a schedule; only 3 are registered"
 	if assert.NotNil(t, err) {
 		assert.Equal(t, expectedErr, err.Error())
 	}
 }
 
-func TestMalformedSchedule(t *testing.T) {
-	filename := fmt.Sprintf("%s/5_1.csv", filepath.Join(model.BaseDir, schedulesDir))
-	scheduleFile, _ := os.Create(filename)
-	defer os.Remove(filename)
-	scheduleFile.WriteString("1,0,2,0,3,0,4,0,5,0,6,0\n6,0,5,0,4,0,3,0,2,0,1,0\n")
-	scheduleFile.Close()
-	teams := make([]model.Team, 5)
-	scheduleBlocks := []model.ScheduleBlock{{0, model.Test, time.Unix(0, 0).UTC(), 1, 60}}
-	_, err := BuildRandomSchedule(teams, scheduleBlocks, model.Test)
-	expectedErr := "Schedule file contains 2 matches, expected 1"
+func TestNoMatchesRequested(t *testing.T) {
+	teams := make([]model.Team, 8)
+	_, err := BuildRandomSchedule(teams, nil, model.Practice)
 	if assert.NotNil(t, err) {
-		assert.Equal(t, expectedErr, err.Error())
+		assert.Equal(t, "no matches were requested in the schedule blocks", err.Error())
 	}
+}
 
-	os.Remove(filename)
-	scheduleFile, _ = os.Create(filename)
-	scheduleFile.WriteString("1,0,asdf,0,3,0,4,0,5,0,6,0\n")
-	scheduleFile.Close()
-	_, err = BuildRandomSchedule(teams, scheduleBlocks, model.Test)
+func TestInvalidMatchType(t *testing.T) {
+	teams := make([]model.Team, 8)
+	scheduleBlocks := []model.ScheduleBlock{{0, model.Playoff, time.Unix(0, 0).UTC(), 2, 60}}
+	_, err := BuildRandomSchedule(teams, scheduleBlocks, model.Playoff)
 	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "strconv.Atoi")
+		assert.Contains(t, err.Error(), "invalid match type")
 	}
 }
 
 func TestScheduleTeams(t *testing.T) {
-	randomizer := rand.New(rand.NewSource(0))
-	schedulePerm = randomizer.Perm
+	scheduleRandom = rand.New(rand.NewSource(0))
 
-	numTeams := 18
+	numTeams := 8
 	teams := make([]model.Team, numTeams)
+	teamIds := make(map[int]bool)
 	for i := 0; i < numTeams; i++ {
 		teams[i].Id = i + 101
+		teamIds[teams[i].Id] = true
 	}
-	scheduleBlocks := []model.ScheduleBlock{{0, model.Practice, time.Unix(0, 0).UTC(), 6, 60}}
+	scheduleBlocks := []model.ScheduleBlock{{0, model.Practice, time.Unix(0, 0).UTC(), 10, 60}}
 	matches, err := BuildRandomSchedule(teams, scheduleBlocks, model.Practice)
 	assert.Nil(t, err)
-	assertMatch(t, matches[0], model.Practice, 1, 0, "P1", "Practice 1", "p", 115, 111, 108, 109, 116, 117)
-	assertMatch(t, matches[1], model.Practice, 2, 60, "P2", "Practice 2", "p", 114, 112, 103, 101, 104, 118)
-	assertMatch(t, matches[2], model.Practice, 3, 120, "P3", "Practice 3", "p", 110, 107, 105, 106, 113, 102)
-	assertMatch(t, matches[3], model.Practice, 4, 180, "P4", "Practice 4", "p", 112, 108, 109, 101, 111, 103)
-	assertMatch(t, matches[4], model.Practice, 5, 240, "P5", "Practice 5", "p", 113, 117, 115, 110, 114, 102)
-	assertMatch(t, matches[5], model.Practice, 6, 300, "P6", "Practice 6", "p", 118, 105, 106, 107, 104, 116)
+	assert.Equal(t, 10, len(matches))
 
-	// Check with excess room for matches in the schedule.
-	scheduleBlocks = []model.ScheduleBlock{{0, model.Practice, time.Unix(0, 0).UTC(), 7, 60}}
-	matches, err = BuildRandomSchedule(teams, scheduleBlocks, model.Practice)
-	assert.Nil(t, err)
+	matchesPlayed := make(map[int]int)
+	for i, match := range matches {
+		assert.Equal(t, model.Practice, match.Type)
+		assert.Equal(t, i+1, match.TypeOrder)
+		assert.Equal(t, "p", match.TbaMatchKey.CompLevel)
+
+		// Red3/Blue3 should always be empty since this event runs two teams per alliance.
+		assert.Equal(t, 0, match.Red3)
+		assert.Equal(t, 0, match.Blue3)
+		assert.False(t, match.Red3IsSurrogate)
+		assert.False(t, match.Blue3IsSurrogate)
+
+		// All four teams in the match should be real, distinct teams.
+		matchTeams := []int{match.Red1, match.Red2, match.Blue1, match.Blue2}
+		seen := make(map[int]bool)
+		for _, teamId := range matchTeams {
+			assert.True(t, teamIds[teamId], "team %d is not a registered team", teamId)
+			assert.False(t, seen[teamId], "team %d appears twice in match %d", teamId, i+1)
+			seen[teamId] = true
+			matchesPlayed[teamId]++
+		}
+	}
+
+	// Every team should have played a roughly equal number of matches (never differing by more than one).
+	minPlayed, maxPlayed := -1, -1
+	for _, count := range matchesPlayed {
+		if minPlayed == -1 || count < minPlayed {
+			minPlayed = count
+		}
+		if count > maxPlayed {
+			maxPlayed = count
+		}
+	}
+	assert.LessOrEqual(t, maxPlayed-minPlayed, 1)
 
 	// Check with qualification matches.
-	randomizer = rand.New(rand.NewSource(0))
-	schedulePerm = randomizer.Perm
-	scheduleBlocks = []model.ScheduleBlock{{0, model.Qualification, time.Unix(0, 0).UTC(), 6, 60}}
+	scheduleRandom = rand.New(rand.NewSource(0))
+	scheduleBlocks = []model.ScheduleBlock{{0, model.Qualification, time.Unix(0, 0).UTC(), 10, 60}}
 	matches, err = BuildRandomSchedule(teams, scheduleBlocks, model.Qualification)
 	assert.Nil(t, err)
-	assertMatch(t, matches[0], model.Qualification, 1, 0, "Q1", "Qualification 1", "qm", 115, 111, 108, 109, 116, 117)
-	assertMatch(t, matches[1], model.Qualification, 2, 60, "Q2", "Qualification 2", "qm", 114, 112, 103, 101, 104, 118)
-	assertMatch(t, matches[2], model.Qualification, 3, 120, "Q3", "Qualification 3", "qm", 110, 107, 105, 106, 113, 102)
-	assertMatch(t, matches[3], model.Qualification, 4, 180, "Q4", "Qualification 4", "qm", 112, 108, 109, 101, 111, 103)
-	assertMatch(t, matches[4], model.Qualification, 5, 240, "Q5", "Qualification 5", "qm", 113, 117, 115, 110, 114, 102)
-	assertMatch(t, matches[5], model.Qualification, 6, 300, "Q6", "Qualification 6", "qm", 118, 105, 106, 107, 104, 116)
+	assert.Equal(t, "Q1", matches[0].ShortName)
+	assert.Equal(t, "Qualification 1", matches[0].LongName)
+	assert.Equal(t, "qm", matches[0].TbaMatchKey.CompLevel)
 }
 
 func TestScheduleTiming(t *testing.T) {
@@ -108,55 +116,47 @@ func TestScheduleTiming(t *testing.T) {
 }
 
 func TestScheduleSurrogates(t *testing.T) {
-	randomizer := rand.New(rand.NewSource(0))
-	schedulePerm = randomizer.Perm
+	scheduleRandom = rand.New(rand.NewSource(0))
 
-	numTeams := 38
+	numTeams := 9
 	teams := make([]model.Team, numTeams)
 	for i := 0; i < numTeams; i++ {
 		teams[i].Id = i + 101
 	}
-	scheduleBlocks := []model.ScheduleBlock{{0, model.Qualification, time.Unix(0, 0).UTC(), 64, 60}}
-	matches, _ := BuildRandomSchedule(teams, scheduleBlocks, model.Qualification)
-	for i, match := range matches {
-		if i == 13 || i == 14 {
-			if !match.Red1IsSurrogate || match.Red2IsSurrogate || match.Red3IsSurrogate ||
-				!match.Blue1IsSurrogate || match.Blue2IsSurrogate || match.Blue3IsSurrogate {
-				t.Errorf("Surrogates wrong for match %d", i+1)
-			}
-		} else {
-			if match.Red1IsSurrogate || match.Red2IsSurrogate || match.Red3IsSurrogate ||
-				match.Blue1IsSurrogate || match.Blue2IsSurrogate || match.Blue3IsSurrogate {
-				t.Errorf("Expected match %d to be free of surrogates", i+1)
-			}
+	// 9 teams * 10 matches isn't evenly divisible by 4 teams/match, so some teams must play an extra match.
+	numMatches := 10
+	scheduleBlocks := []model.ScheduleBlock{{0, model.Qualification, time.Unix(0, 0).UTC(), numMatches, 60}}
+	matches, err := BuildRandomSchedule(teams, scheduleBlocks, model.Qualification)
+	assert.Nil(t, err)
+
+	targetPerTeam := (numMatches * TeamsPerMatch) / numTeams
+	expectedSurrogateCount := numMatches*TeamsPerMatch - targetPerTeam*numTeams
+
+	matchesPlayed := make(map[int]int)
+	surrogateCount := 0
+	for _, match := range matches {
+		if match.Red1IsSurrogate {
+			surrogateCount++
+		}
+		if match.Red2IsSurrogate {
+			surrogateCount++
+		}
+		if match.Blue1IsSurrogate {
+			surrogateCount++
+		}
+		if match.Blue2IsSurrogate {
+			surrogateCount++
+		}
+		matchesPlayed[match.Red1]++
+		matchesPlayed[match.Red2]++
+		matchesPlayed[match.Blue1]++
+		matchesPlayed[match.Blue2]++
+	}
+
+	assert.Equal(t, expectedSurrogateCount, surrogateCount)
+	for teamId, count := range matchesPlayed {
+		if count > targetPerTeam {
+			assert.Equal(t, targetPerTeam+1, count, "team %d played an unexpected number of matches", teamId)
 		}
 	}
-}
-
-func assertMatch(
-	t *testing.T,
-	match model.Match,
-	matchType model.MatchType,
-	typeOrder int,
-	timeInSec int64,
-	shortName, longName, tbaCompLevel string,
-	red1, red2, red3, blue1, blue2, blue3 int,
-) {
-	assert.Equal(t, matchType, match.Type)
-	assert.Equal(t, typeOrder, match.TypeOrder)
-	assert.Equal(t, time.Unix(timeInSec, 0).UTC(), match.Time)
-	assert.Equal(t, shortName, match.ShortName)
-	assert.Equal(t, longName, match.LongName)
-	assert.Equal(t, "", match.NameDetail)
-	assert.Equal(t, 0, match.PlayoffRedAlliance)
-	assert.Equal(t, 0, match.PlayoffBlueAlliance)
-	assert.Equal(t, red1, match.Red1)
-	assert.Equal(t, red2, match.Red2)
-	assert.Equal(t, red3, match.Red3)
-	assert.Equal(t, blue1, match.Blue1)
-	assert.Equal(t, blue2, match.Blue2)
-	assert.Equal(t, blue3, match.Blue3)
-	assert.Equal(t, tbaCompLevel, match.TbaMatchKey.CompLevel)
-	assert.Equal(t, 0, match.TbaMatchKey.SetNumber)
-	assert.Equal(t, typeOrder, match.TbaMatchKey.MatchNumber)
 }

@@ -13,7 +13,6 @@ import (
 
 func TestBuildJudgingSchedule(t *testing.T) {
 	randomizer := rand.New(rand.NewSource(0))
-	schedulePerm = randomizer.Perm
 	judgingShuffle = randomizer.Shuffle
 	database := setupTestDb(t)
 
