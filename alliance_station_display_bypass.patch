@@ -1,0 +1,11 @@
+--- a/static/js/alliance_station_display.js	2026-07-30 14:31:06.271263826 +0000
++++ b/static/js/alliance_station_display.js	2026-07-30 14:31:09.415121079 +0000
+@@ -78,7 +78,7 @@
+   stationStatus = data.AllianceStations[station];
+   var blink = false;
+   if (stationStatus && stationStatus.Bypass) {
+-    $("#match").attr("data-status", "");
++    $("#match").attr("data-status", "bypass");
+   } else if (stationStatus) {
+     if (!stationStatus.DsConn || !stationStatus.DsConn.DsLinked) {
+       $("#match").attr("data-status", station[0]);

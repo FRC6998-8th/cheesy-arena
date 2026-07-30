@@ -35,6 +35,11 @@ func (arena *Arena) SetHubColor(hubId string, color HubColor) error {
 	if arena.HubColors == nil {
 		arena.HubColors = make(map[string]HubColor)
 	}
+	if arena.HubColors[hubId] == color {
+		// No actual change; skip the notification to avoid flooding listeners every arena loop tick (this method
+		// gets called unconditionally on every Update() during a match).
+		return nil
+	}
 	arena.HubColors[hubId] = color
 	arena.HubColorNotifier.Notify()
 	return nil

@@ -579,12 +579,12 @@ func (arena *Arena) ResetMatch() error {
 	}
 	arena.closeTeamMatchLogs()
 	arena.matchAborted = false
-	arena.AllianceStations["R1"].Bypass = false
-	arena.AllianceStations["R2"].Bypass = false
-	arena.AllianceStations["R3"].Bypass = false
-	arena.AllianceStations["B1"].Bypass = false
-	arena.AllianceStations["B2"].Bypass = false
-	arena.AllianceStations["B3"].Bypass = false
+	arena.AllianceStations["R1"].Bypass = true
+	arena.AllianceStations["R2"].Bypass = true
+	arena.AllianceStations["R3"].Bypass = true
+	arena.AllianceStations["B1"].Bypass = true
+	arena.AllianceStations["B2"].Bypass = true
+	arena.AllianceStations["B3"].Bypass = true
 	arena.MuteMatchSounds = false
 	return nil
 }
@@ -1145,6 +1145,11 @@ func (arena *Arena) checkAllianceStationsReady(stations ...string) error {
 		}
 		if !allianceStation.aStopReset {
 			return fmt.Errorf("cannot start match if an autonomous stop has not been reset since the previous match")
+		}
+		if !allianceStation.Bypass {
+			if allianceStation.DsConn == nil || !allianceStation.DsConn.RobotLinked {
+				return fmt.Errorf("cannot start match until all robots are connected or bypassed")
+			}
 		}
 
 	}

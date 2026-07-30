@@ -7,6 +7,7 @@ package playoff
 
 import (
 	"fmt"
+
 	"github.com/Team254/cheesy-arena/model"
 )
 
@@ -77,11 +78,11 @@ func newFourAllianceDoubleEliminationBracket() (*Matchup, []breakSpec, error) {
 
 	// Define scheduled breaks.
 	breakSpecs := []breakSpec{
-		{3, 900, "Field Break"},
-		{5, 900, "Awards Break"},
-		{6, 900, "Awards Break"},
-		{7, 900, "Awards Break"},
-		{8, 900, "Awards Break *"},
+		{3, 60, "Field Break"},
+		{5, 60, "Awards Break"},
+		{6, 60, "Awards Break"},
+		{7, 60, "Awards Break"},
+		{8, 60, "Awards Break *"},
 	}
 
 	return &final, breakSpecs, nil
@@ -201,12 +202,12 @@ func newEightAllianceDoubleEliminationBracket() (*Matchup, []breakSpec, error) {
 
 	// Define scheduled breaks.
 	breakSpecs := []breakSpec{
-		{9, 360, "Field Break"},
-		{11, 360, "Field Break"},
-		{13, 900, "Awards Break"},
-		{14, 900, "Awards Break"},
-		{15, 900, "Awards Break"},
-		{16, 900, "Awards Break *"},
+		{9, 60, "Field Break"},
+		{11, 60, "Field Break"},
+		{13, 60, "Awards Break"},
+		{14, 60, "Awards Break"},
+		{15, 60, "Awards Break"},
+		{16, 60, "Awards Break *"},
 	}
 
 	return &final, breakSpecs, nil
