@@ -17,7 +17,7 @@ UI for entering realtime scores.
       <div class="tower-row">
       <div class="tower-team-controls" id="auto-controls">
       {{range $i := seq 2}}
-      {{template "tower-input" (dict "id" (printf "auto-input-%d" $i) "index" $i "handler" "handleAutoTowerClick")}}
+      {{template "tower-input" (dict "id" (printf "auto-input-%d" $i) "index" $i "handler" "auto")}}
       {{end}}
       </div>
       <div class="manual-controls auto-manual-block">
@@ -36,7 +36,7 @@ UI for entering realtime scores.
       <div class="tower-row">
       <div class="tower-team-controls" id="endgame-controls">
       {{range $i := seq 2}}
-      {{template "tower-input" (dict "id" (printf "endgame-input-%d" $i) "index" $i "handler" "handleEndgameClick")}}
+      {{template "tower-input" (dict "id" (printf "endgame-input-%d" $i) "index" $i "handler" "endgame")}}
       {{end}}
       </div>
       <div class="manual-controls endgame-manual-block">
@@ -100,7 +100,8 @@ UI for entering realtime scores.
 </div>
 {{end}}
 {{define "tower-input-button"}}
-<button class="tower-input-button scoring-tower-button tower-{{.towerState}}" ontouchstart
-  onclick="{{.handler}}({{.index}}, {{.towerState}});">{{.label}}
+<button class="tower-input-button scoring-tower-button tower-{{.towerState}}" data-handler="{{.handler}}"
+  data-index="{{.index}}" data-status="{{.towerState}}" ontouchstart onclick="handleTowerButtonClick(this);">
+  {{.label}}
 </button>
 {{end}}
