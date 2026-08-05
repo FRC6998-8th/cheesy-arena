@@ -153,6 +153,8 @@ func (web *Web) newHandler() http.Handler {
 	mux.HandleFunc("GET /displays/announcer/websocket", web.announcerDisplayWebsocketHandler)
 	mux.HandleFunc("GET /displays/audience", web.audienceDisplayHandler)
 	mux.HandleFunc("GET /displays/audience/websocket", web.audienceDisplayWebsocketHandler)
+	mux.HandleFunc("GET /displays/audience_score", web.audienceScoreDisplayHandler)
+	mux.HandleFunc("GET /displays/audience_score/websocket", web.audienceScoreDisplayWebsocketHandler)
 	mux.HandleFunc("GET /displays/bracket", web.bracketDisplayHandler)
 	mux.HandleFunc("GET /displays/bracket/websocket", web.bracketDisplayWebsocketHandler)
 	mux.HandleFunc("GET /displays/field_monitor", web.fieldMonitorDisplayHandler)

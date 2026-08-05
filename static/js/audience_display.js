@@ -674,6 +674,8 @@ const initializeSponsorDisplay = function () {
   });
 };
 
+
+
 const getAvatarUrl = function (teamId) {
   return DisplayShared.getAvatarUrl(teamId);
 };
