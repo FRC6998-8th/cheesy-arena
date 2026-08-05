@@ -5,6 +5,7 @@
 package web
 
 import (
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	"net/http"
@@ -16,7 +17,7 @@ func (web *Web) audienceScoreDisplayHandler(w http.ResponseWriter, r *http.Reque
 		w,
 		r,
 		map[string]string{
-			"background":      "#000",
+			"background":      "transparent",
 			"reversed":        "false",
 			"overlayLocation": "center",
 			"topSpacingPx":    "0",
@@ -34,7 +35,8 @@ func (web *Web) audienceScoreDisplayHandler(w http.ResponseWriter, r *http.Reque
 
 	data := struct {
 		*model.EventSettings
-	}{web.arena.EventSettings}
+		MatchSounds []*game.MatchSound
+	}{web.arena.EventSettings, game.UniqueMatchSounds()}
 	err = template.ExecuteTemplate(w, "audience_score_display.html", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -65,6 +67,8 @@ func (web *Web) audienceScoreDisplayWebsocketHandler(w http.ResponseWriter, r *h
 		web.arena.MatchLoadNotifier,
 		web.arena.MatchTimeNotifier,
 		web.arena.RealtimeScoreNotifier,
+		web.arena.PlaySoundNotifier,
+		web.arena.ScorePostedNotifier,
 		web.arena.ReloadDisplaysNotifier,
 	)
 }

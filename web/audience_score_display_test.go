@@ -15,7 +15,7 @@ func TestAudienceScoreDisplay(t *testing.T) {
 	recorder := web.getHttpResponse("/displays/audience_score")
 	assert.Equal(t, 302, recorder.Code)
 	assert.Contains(t, recorder.Header().Get("Location"), "displayId=100")
-	assert.Contains(t, recorder.Header().Get("Location"), "background=%23000")
+	assert.Contains(t, recorder.Header().Get("Location"), "background=transparent")
 	assert.Contains(t, recorder.Header().Get("Location"), "reversed=false")
 	assert.Contains(t, recorder.Header().Get("Location"), "overlayLocation=center")
 	assert.Contains(t, recorder.Header().Get("Location"), "topSpacingPx=0")
@@ -44,6 +44,7 @@ func TestAudienceScoreDisplayWebsocket(t *testing.T) {
 	readWebsocketType(t, ws, "matchLoad")
 	readWebsocketType(t, ws, "matchTime")
 	readWebsocketType(t, ws, "realtimeScore")
+	readWebsocketType(t, ws, "scorePosted")
 
 	web.arena.MatchLoadNotifier.Notify()
 	readWebsocketType(t, ws, "matchLoad")
@@ -56,12 +57,16 @@ func TestAudienceScoreDisplayWebsocket(t *testing.T) {
 	web.arena.StartMatch()
 	web.arena.Update()
 	web.arena.Update()
-	messages := readWebsocketMultiple(t, ws, 3)
+	messages := readWebsocketMultiple(t, ws, 4)
 	screen, ok := messages["audienceDisplayMode"]
 	if assert.True(t, ok) {
 		assert.Equal(t, "match", screen)
 	}
+	_, ok = messages["playSound"]
+	assert.True(t, ok)
 	_, ok = messages["matchTime"]
+	assert.True(t, ok)
+	_, ok = messages["realtimeScore"]
 	assert.True(t, ok)
 	web.arena.RealtimeScoreNotifier.Notify()
 	readWebsocketType(t, ws, "realtimeScore")
