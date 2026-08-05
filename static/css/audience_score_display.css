@@ -3,6 +3,7 @@
 */
 
 @import url("/static/css/display_overlay_shared.css");
+@import url("/static/css/audience_display.css");
 
 html,
 body {
@@ -16,9 +17,15 @@ body {
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  background-image: url("/static/img/endofmatch-bg.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 #scaleWrapper {
+  width: 940px;
+  height: 170px;
   flex-shrink: 0;
   transform-origin: center center;
 }
@@ -32,4 +39,29 @@ body {
 
 #overlayCentering[data-visible=true] {
   opacity: 1;
+}
+
+#liveGraphic {
+  background-color: transparent;
+}
+
+#finalScore {
+  width: 96vw;
+  max-width: 1600px;
+}
+
+.final-score {
+  height: clamp(150px, 22vh, 240px);
+  line-height: clamp(150px, 22vh, 240px);
+  font-size: clamp(90px, 12vw, 190px);
+}
+
+.final-breakdown {
+  height: clamp(300px, 42vh, 450px);
+  font-size: clamp(24px, 2vw, 36px);
+}
+
+#finalEventMatchInfo {
+  height: clamp(45px, 6vh, 65px);
+  font-size: clamp(22px, 2vw, 34px);
 }
