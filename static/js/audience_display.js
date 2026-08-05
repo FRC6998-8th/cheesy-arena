@@ -117,8 +117,29 @@ const setFinalResultIndicator = function (side, label, result) {
   indicator.attr("data-result", result);
 };
 
+const rankingPointIconUrl = function (type, state) {
+  return `/static/img/rp/${state}-${type}.png`;
+};
+
+const setFinalRankingPointIcons = function (side, scoreSummary, won, tied) {
+  const icons = [
+    ["energized", scoreSummary.EnergizedBonusRankingPoint],
+    ["supercharged", scoreSummary.SuperchargedBonusRankingPoint],
+    ["traversal", scoreSummary.TraversalBonusRankingPoint],
+    ["win", won || tied],
+    ["win", won],
+    ["win", won],
+  ];
+  const iconHtml = icons.map(function ([type, earned]) {
+    const state = earned ? (side === redSide ? "redSide" : "blueSide") : "no";
+    return `<img class="final-ranking-point-icon" src="${rankingPointIconUrl(type, state)}" alt="${type} RP"/>`;
+  }).join("");
+  $(`#${side}FinalRankingPointIcons`).html(iconHtml);
+};
+
 // Handles a websocket message to populate the final score data.
 const handleScorePosted = function (data) {
+  const tied = !data.RedWon && !data.BlueWon;
   if (data.RedWon) {
     setFinalResultIndicator(redSide, "WINNER", "winner");
     setFinalResultIndicator(blueSide, "", "");
@@ -142,25 +163,7 @@ const handleScorePosted = function (data) {
   $(`#${redSide}FinalTeleopFuelPoints`).text(data.RedScoreSummary.TeleopFuelPoints);
   $(`#${redSide}FinalTeleopTowerPoints`).text(data.RedScoreSummary.TeleopTowerPoints);
   $(`#${redSide}FinalFoulPoints`).text(data.RedScoreSummary.FoulPoints);
-  $(`#${redSide}FinalEnergizedBonusRankingPoint`).html(
-    data.RedScoreSummary.EnergizedBonusRankingPoint ? "&#x2714;" : "&#x2718;"
-  );
-  $(`#${redSide}FinalEnergizedBonusRankingPoint`).attr(
-    "data-checked", data.RedScoreSummary.EnergizedBonusRankingPoint
-  );
-  $(`#${redSide}FinalSuperchargedBonusRankingPoint`).html(
-    data.RedScoreSummary.SuperchargedBonusRankingPoint ? "&#x2714;" : "&#x2718;"
-  );
-  $(`#${redSide}FinalSuperchargedBonusRankingPoint`).attr(
-    "data-checked", data.RedScoreSummary.SuperchargedBonusRankingPoint
-  );
-  $(`#${redSide}FinalTraversalBonusRankingPoint`).html(
-    data.RedScoreSummary.TraversalBonusRankingPoint ? "&#x2714;" : "&#x2718;"
-  );
-  $(`#${redSide}FinalTraversalBonusRankingPoint`).attr(
-    "data-checked", data.RedScoreSummary.TraversalBonusRankingPoint
-  );
-  $(`#${redSide}FinalRankingPoints`).html(data.RedRankingPoints);
+  setFinalRankingPointIcons(redSide, data.RedScoreSummary, data.RedWon, tied);
   $(`#${redSide}FinalWins`).text(data.RedWins);
   const redFinalDestination = $(`#${redSide}FinalDestination`);
   redFinalDestination.html(data.RedDestination.replace("Advances to ", "Advances to<br>"));
@@ -176,25 +179,7 @@ const handleScorePosted = function (data) {
   $(`#${blueSide}FinalTeleopFuelPoints`).text(data.BlueScoreSummary.TeleopFuelPoints);
   $(`#${blueSide}FinalTeleopTowerPoints`).text(data.BlueScoreSummary.TeleopTowerPoints);
   $(`#${blueSide}FinalFoulPoints`).text(data.BlueScoreSummary.FoulPoints);
-  $(`#${blueSide}FinalEnergizedBonusRankingPoint`).html(
-    data.BlueScoreSummary.EnergizedBonusRankingPoint ? "&#x2714;" : "&#x2718;"
-  );
-  $(`#${blueSide}FinalEnergizedBonusRankingPoint`).attr(
-    "data-checked", data.BlueScoreSummary.EnergizedBonusRankingPoint
-  );
-  $(`#${blueSide}FinalSuperchargedBonusRankingPoint`).html(
-    data.BlueScoreSummary.SuperchargedBonusRankingPoint ? "&#x2714;" : "&#x2718;"
-  );
-  $(`#${blueSide}FinalSuperchargedBonusRankingPoint`).attr(
-    "data-checked", data.BlueScoreSummary.SuperchargedBonusRankingPoint
-  );
-  $(`#${blueSide}FinalTraversalBonusRankingPoint`).html(
-    data.BlueScoreSummary.TraversalBonusRankingPoint ? "&#x2714;" : "&#x2718;"
-  );
-  $(`#${blueSide}FinalTraversalBonusRankingPoint`).attr(
-    "data-checked", data.BlueScoreSummary.TraversalBonusRankingPoint
-  );
-  $(`#${blueSide}FinalRankingPoints`).html(data.BlueRankingPoints);
+  setFinalRankingPointIcons(blueSide, data.BlueScoreSummary, data.BlueWon, tied);
   $(`#${blueSide}FinalWins`).text(data.BlueWins);
   const blueFinalDestination = $(`#${blueSide}FinalDestination`);
   blueFinalDestination.html(data.BlueDestination.replace("Advances to ", "Advances to<br>"));

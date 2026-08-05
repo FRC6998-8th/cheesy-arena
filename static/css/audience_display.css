@@ -235,10 +235,40 @@
   align-items: center;
 }
 
+.final-team-panels {
+  width: 250px;
+}
+
 .final-teams {
   width: 250px;
   padding: 20px;
   border-radius: 20px;
+}
+
+.final-ranking-point-panel {
+  width: 250px;
+  margin-top: 12px;
+  padding: 8px 10px 10px;
+  border-radius: 20px;
+}
+
+.final-ranking-point-icons {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+.final-ranking-point-label {
+  margin-bottom: 4px;
+  color: #fff;
+  font-family: "FuturaLTBold";
+  font-size: 16px;
+  text-align: center;
+}
+
+.final-ranking-point-icon {
+  width: 34px;
+  height: 34px;
 }
 
 .final-alliance {
@@ -348,14 +378,6 @@
   font-size: 28px;
   background-color: #444;
   color: #fff;
-}
-
-[data-checked=true] {
-  color: #0c0;
-}
-
-[data-checked=false] {
-  color: #e00;
 }
 
 .final-footer {
