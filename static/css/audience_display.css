@@ -69,6 +69,21 @@
   transform: rotateY(-180deg);
 }
 
+#liveGraphic {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  display: none;
+  background-color: #000;
+  opacity: 0;
+}
+
+#liveGraphicImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .blinds.left .blindsCenter.blank {
   right: -155px;
 }

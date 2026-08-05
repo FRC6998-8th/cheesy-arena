@@ -18,6 +18,7 @@ let blueSide;
 let currentMatch;
 let overlayCenteringHideParams;
 let overlayCenteringShowParams;
+let liveGraphic;
 const hubActiveController = DisplayShared.createHubActiveController(function () {
   return currentScreen;
 });
@@ -117,6 +118,51 @@ const setFinalResultIndicator = function (side, label, result) {
   indicator.attr("data-result", result);
 };
 
+const setLiveGraphic = function (data) {
+  if (data.RedWon) {
+    liveGraphic = { source: "/static/img/live%20graphics/red.gif", durationMs: 6040 };
+  } else if (data.BlueWon) {
+    liveGraphic = { source: "/static/img/live%20graphics/blue.gif", durationMs: 4000 };
+  } else {
+    liveGraphic = { source: "/static/img/live%20graphics/tie.gif", durationMs: 5900 };
+  }
+};
+
+const showFinalScore = function (callback) {
+  const showScore = function () {
+    $("#finalScore").show();
+    $("#finalScore").transition({ queue: false, opacity: 1 }, 1000, "ease", callback);
+  };
+
+  const showLiveGraphic = function () {
+    if (liveGraphic === undefined) {
+      showScore();
+      return;
+    }
+    const graphic = $("#liveGraphic");
+    const image = $("#liveGraphicImage");
+    image.one("load", function () {
+      graphic.show();
+      graphic.transition({ queue: false, opacity: 1 }, 150, "linear");
+      setTimeout(function () {
+        graphic.transition({ queue: false, opacity: 0 }, 250, "linear", function () {
+          graphic.hide();
+          showScore();
+        });
+      }, liveGraphic.durationMs);
+    });
+    image.one("error", showScore);
+    image.attr("src", `${liveGraphic.source}?v=${Date.now()}`);
+  };
+
+  // The score-posted event normally arrives before this transition; wait briefly for it if needed.
+  if (liveGraphic === undefined) {
+    setTimeout(showLiveGraphic, 250);
+  } else {
+    showLiveGraphic();
+  }
+};
+
 const rankingPointIconUrl = function (type, state) {
   return `/static/img/rp/${state}-${type}.png`;
 };
@@ -139,6 +185,7 @@ const setFinalRankingPointIcons = function (side, scoreSummary, won, tied) {
 
 // Handles a websocket message to populate the final score data.
 const handleScorePosted = function (data) {
+  setLiveGraphic(data);
   const tied = !data.RedWon && !data.BlueWon;
   if (data.RedWon) {
     setFinalResultIndicator(redSide, "WINNER", "winner");
@@ -394,8 +441,7 @@ const transitionBracketToScore = function (callback) {
   $(".blindsCenter.full").transition({ queue: false, top: scoreLogoTop, scale: 1 }, 1000, "ease");
   $("#bracket").transition({ queue: false, opacity: 0 }, 1000, "ease", function () {
     $("#bracket").hide();
-    $("#finalScore").show();
-    $("#finalScore").transition({ queue: false, opacity: 1 }, 1000, "ease", callback);
+    showFinalScore(callback);
   });
 };
 
@@ -479,8 +525,7 @@ const transitionLogoToLogoLuma = function (callback) {
 
 const transitionLogoToScore = function (callback) {
   $(".blindsCenter.full").transition({ queue: false, top: scoreLogoTop }, 625, "ease");
-  $("#finalScore").show();
-  $("#finalScore").transition({ queue: false, opacity: 1 }, 1000, "ease", callback);
+  showFinalScore(callback);
 };
 
 const transitionLogoToSponsor = function (callback) {
