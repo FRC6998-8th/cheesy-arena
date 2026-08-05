@@ -1,0 +1,104 @@
+{{/*
+Copyright 2026 Team 254. All Rights Reserved.
+
+Standalone display that shows only the audience score overlay, without full-screen content.
+*/}}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Audience Score Display - {{.EventSettings.Name}} - Cheesy Arena </title>
+    <link rel="shortcut icon" href="/static/img/favicon.ico">
+    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/static/css/cheesy-arena.css"/>
+    <link rel="stylesheet" href="/static/css/audience_score_display.css"/>
+  </head>
+  <body>
+    <div id="scaleWrapper">
+    <div id="overlayCentering">
+      <div id="matchOverlayContainer">
+        <div class="playoff-alliance" id="leftPlayoffAlliance"></div>
+        <div id="matchOverlay">
+          <div id="matchOverlayTop">
+            <div class="teams" id="leftTeams">
+              <div id="leftTeam1"></div>
+              <div id="leftTeam2"></div>
+            </div>
+            <div class="score reversible-left">
+              <div class="avatars">
+                <img class="avatar" id="leftTeam1Avatar" src=""/>
+                <img class="avatar" id="leftTeam2Avatar" src=""/>
+              </div>
+              <div class="score-fields">
+                <div class="score-fuel">
+                  <span id="leftFuelNumerator"></span>
+                  <span id="leftFuelDenominator"></span>
+                </div>
+                <div class="score-hub-active" id="leftHubActive">
+                  <svg width="70" height="100">
+                    <circle class="progress-guide" cx="35" cy="50" r="25" fill="none" stroke="white" stroke-width="2"/>
+                    <circle class="active-progress" cx="35" cy="50" r="25" fill="none" stroke="white" stroke-width="5"
+                      stroke-dasharray="158 158" stroke-dashoffset="5" transform="rotate(90, 35, 50)"/>
+                    <text class="progress-time" x="35" y="52" text-anchor="middle" dominant-baseline="middle" fill="white"></text>
+                  </svg>
+                </div>
+              </div>
+              <div class="score-number" id="leftScoreNumber"></div>
+            </div>
+            <div class="score score-right reversible-right">
+              <div class="score-number" id="rightScoreNumber"></div>
+              <div class="score-fields">
+                <div class="score-hub-active" id="rightHubActive">
+                  <svg width="70" height="100">
+                    <circle class="progress-guide" cx="35" cy="50" r="25" fill="none" stroke="white" stroke-width="2"/>
+                    <circle class="active-progress" cx="35" cy="50" r="25" fill="none" stroke="white" stroke-width="5"
+                      stroke-dasharray="158 158" stroke-dashoffset="-5" transform="rotate(90, 35, 50)"/>
+                    <text class="progress-time" x="35" y="52" text-anchor="middle" dominant-baseline="middle" fill="white"></text>
+                  </svg>
+                </div>
+                <div class="score-fuel">
+                  <span id="rightFuelNumerator"></span>
+                  <span id="rightFuelDenominator"></span>
+                </div>
+              </div>
+              <div class="avatars">
+                <img class="avatar" id="rightTeam1Avatar" src=""/>
+                <img class="avatar" id="rightTeam2Avatar" src=""/>
+              </div>
+            </div>
+            <div class="teams" id="rightTeams">
+              <div id="rightTeam1"></div>
+              <div id="rightTeam2"></div>
+            </div>
+          </div>
+          <div id="eventMatchInfo">
+            <span>{{.EventSettings.Name}}</span>
+            <span id="matchName"></span>
+          </div>
+        </div>
+        <div class="playoff-alliance" id="rightPlayoffAlliance"></div>
+      </div>
+      <div id="playoffSeriesStatus">
+        <span id="leftPlayoffAllianceWins"></span>&nbsp;-&nbsp;<span id="rightPlayoffAllianceWins"></span>
+      </div>
+      <div class="text-center" id="matchCircle">
+        <img id="logo" src="/static/img/game-logo.png" alt="logo"/>
+        <div id="matchTime"></div>
+      </div>
+      <div id="timeoutDetails">
+        <div class="timeout-detail" id="timeoutBreakDescription"></div>
+        <div class="timeout-detail" id="timeoutNextMatch">
+          Next Up:<br/>
+          <span id="timeoutNextMatchName"></span>
+        </div>
+      </div>
+      </div>
+    </div>
+    <script src="/static/js/lib/jquery.min.js"></script>
+    <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
+    <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
+    <script src="/static/js/lib/jquery.transit.min.js"></script>
+    <script src="/static/js/cheesy-websocket.js"></script>
+    <script src="/static/js/match_timing.js"></script>
+    <script src="/static/js/audience_score_display.js"></script>
+  </body>
+</html>

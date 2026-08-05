@@ -1,0 +1,28 @@
+diff --git a/websocket/websocket.go b/websocket/websocket.go
+index b718898..3848f44 100644
+--- a/websocket/websocket.go
++++ b/websocket/websocket.go
+@@ -20,6 +20,13 @@ import (
+ 
+ const pingInterval = time.Second * 10
+ 
++// If a client stops reading (e.g. a tablet's WiFi drops or its screen sleeps), WriteJSON would otherwise block
++// forever waiting for TCP buffer space, permanently wedging this connection's notifier-forwarding goroutine and
++// causing every notifier's channel for this listener to back up (logged as "blocked listener"). Capping the write
++// with a deadline ensures a stalled connection fails fast instead, so it can be cleaned up and stop spamming the
++// logs.
++const writeTimeout = 5 * time.Second
++
+ // Wraps the Gorilla Websocket module so that we can define additional functions on it.
+ type Websocket struct {
+ 	conn       *websocket.Conn
+@@ -92,6 +99,9 @@ func (ws *Websocket) ReadWithTimeout(timeout time.Duration) (string, any, error)
+ func (ws *Websocket) Write(messageType string, data any) error {
+ 	ws.writeMutex.Lock()
+ 	defer ws.writeMutex.Unlock()
++	if err := ws.conn.SetWriteDeadline(time.Now().Add(writeTimeout)); err != nil {
++		return err
++	}
+ 	err := ws.conn.WriteJSON(Message{messageType, data})
+ 	if err != nil {
+ 		// Include the caller of this method in the error message.

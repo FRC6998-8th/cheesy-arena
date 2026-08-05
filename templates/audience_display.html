@@ -102,6 +102,9 @@ Display shown on the audience screen overlayed over the video.
       <div class="blindsCenter full">
         <img id="blindsLogo" src="/static/img/blinds-logo.png" alt="logo"/>
       </div>
+      <div id="liveGraphic">
+        <img id="liveGraphicImage" src="" alt="match result animation"/>
+      </div>
       <div id="finalScoreCentering">
         <div id="finalScore">
           <div id="finalResultIndicators">
@@ -118,21 +121,27 @@ Display shown on the audience screen overlayed over the video.
           </div>
           <div class="final-score-row">
             <div class="final-breakdown final-breakdown-teams">
-              <div class="final-teams reversible-left">
-                <div class="final-alliance playoff-only-field" id="leftFinalAlliance"></div>
-                {{range $i := seq 2}}
-                <div class="final-team-row">
-                  <img class="final-team-avatar" id="leftFinalTeam{{$i}}Avatar" src=""/>
-                  <div class="final-team-number" id="leftFinalTeam{{$i}}"></div>
-                  <div class="final-team-card">
-                    <div id="leftFinalTeam{{$i}}Card"></div>
+              <div class="final-team-panels">
+                <div class="final-teams reversible-left">
+                  <div class="final-alliance playoff-only-field" id="leftFinalAlliance"></div>
+                  {{range $i := seq 2}}
+                  <div class="final-team-row">
+                    <img class="final-team-avatar" id="leftFinalTeam{{$i}}Avatar" src=""/>
+                    <div class="final-team-number" id="leftFinalTeam{{$i}}"></div>
+                    <div class="final-team-card">
+                      <div id="leftFinalTeam{{$i}}Card"></div>
+                    </div>
+                    <div class="final-team-rank playoff-hidden-field">
+                      <img id="leftFinalTeam{{$i}}RankIndicator" src=""/>
+                      <div id="leftFinalTeam{{$i}}RankNumber"></div>
+                    </div>
                   </div>
-                  <div class="final-team-rank playoff-hidden-field">
-                    <img id="leftFinalTeam{{$i}}RankIndicator" src=""/>
-                    <div id="leftFinalTeam{{$i}}RankNumber"></div>
-                  </div>
+                  {{end}}
                 </div>
-                {{end}}
+                <div class="final-ranking-point-panel reversible-left playoff-hidden-field">
+                  <div class="final-ranking-point-label">Ranking Points</div>
+                  <div class="final-ranking-point-icons" id="leftFinalRankingPointIcons"></div>
+                </div>
               </div>
               <div class="playoff-only-field">
                 <div class="final-destination" id="leftFinalDestination"></div>
@@ -144,12 +153,6 @@ Display shown on the audience screen overlayed over the video.
               <div id="leftFinalTeleopFuelPoints"></div>
               <div id="leftFinalTeleopTowerPoints"></div>
               <div id="leftFinalFoulPoints"></div>
-              <div class="playoff-hidden-field">
-                <div id="leftFinalEnergizedBonusRankingPoint"></div>
-                <div id="leftFinalSuperchargedBonusRankingPoint"></div>
-                <div id="leftFinalTraversalBonusRankingPoint"></div>
-                <div id="leftFinalRankingPoints"></div>
-              </div>
               <div class="playoff-only-field">
                 <div>&nbsp;</div>
                 <div id="leftFinalWins"></div>
@@ -161,12 +164,6 @@ Display shown on the audience screen overlayed over the video.
               <div>Teleop Fuel</div>
               <div>Teleop Park</div>
               <div>Foul</div>
-              <div class="playoff-hidden-field">
-                <div>Energized Bonus</div>
-                <div>Supercharged Bonus</div>
-                <div>Traversal Bonus</div>
-                <div>Ranking Points</div>
-              </div>
               <div class="playoff-only-field">
                 <div>&nbsp;</div>
                 <div>Wins</div>
@@ -178,33 +175,33 @@ Display shown on the audience screen overlayed over the video.
               <div id="rightFinalTeleopFuelPoints"></div>
               <div id="rightFinalTeleopTowerPoints"></div>
               <div id="rightFinalFoulPoints"></div>
-              <div class="playoff-hidden-field">
-                <div id="rightFinalEnergizedBonusRankingPoint"></div>
-                <div id="rightFinalSuperchargedBonusRankingPoint"></div>
-                <div id="rightFinalTraversalBonusRankingPoint"></div>
-                <div id="rightFinalRankingPoints"></div>
-              </div>
               <div class="playoff-only-field">
                 <div>&nbsp;</div>
                 <div id="rightFinalWins"></div>
               </div>
             </div>
             <div class="final-breakdown final-breakdown-teams">
-              <div class="final-teams reversible-right">
-                <div class="final-alliance playoff-only-field" id="rightFinalAlliance"></div>
-                {{range $i := seq 2}}
-                <div class="final-team-row">
-                  <img class="final-team-avatar" id="rightFinalTeam{{$i}}Avatar" src=""/>
-                  <div class="final-team-number" id="rightFinalTeam{{$i}}"></div>
-                  <div class="final-team-card">
-                    <div id="rightFinalTeam{{$i}}Card"></div>
+              <div class="final-team-panels">
+                <div class="final-teams reversible-right">
+                  <div class="final-alliance playoff-only-field" id="rightFinalAlliance"></div>
+                  {{range $i := seq 2}}
+                  <div class="final-team-row">
+                    <img class="final-team-avatar" id="rightFinalTeam{{$i}}Avatar" src=""/>
+                    <div class="final-team-number" id="rightFinalTeam{{$i}}"></div>
+                    <div class="final-team-card">
+                      <div id="rightFinalTeam{{$i}}Card"></div>
+                    </div>
+                    <div class="final-team-rank playoff-hidden-field">
+                      <img id="rightFinalTeam{{$i}}RankIndicator" src=""/>
+                      <div id="rightFinalTeam{{$i}}RankNumber"></div>
+                    </div>
                   </div>
-                  <div class="final-team-rank playoff-hidden-field">
-                    <img id="rightFinalTeam{{$i}}RankIndicator" src=""/>
-                    <div id="rightFinalTeam{{$i}}RankNumber"></div>
-                  </div>
+                  {{end}}
                 </div>
-                {{end}}
+                <div class="final-ranking-point-panel reversible-right playoff-hidden-field">
+                  <div class="final-ranking-point-label">Ranking Points</div>
+                  <div class="final-ranking-point-icons" id="rightFinalRankingPointIcons"></div>
+                </div>
               </div>
               <div class="playoff-only-field">
                 <div class="final-destination" id="rightFinalDestination"></div>

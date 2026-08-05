@@ -164,6 +164,21 @@ const handleEndgameClick = function (teamPosition, endgameTowerStatus) {
   websocket.send("endgamePark", { TeamPosition: teamPosition, EndgameParkStatus: endgameTowerStatus });
 }
 
+// Single dispatcher for the Auto/Endgame park status buttons, reading which handler to use and the button's
+// index/status from its data attributes (rather than embedding the function name directly in the onclick
+// attribute, which Go's html/template auto-escapes as a JS string literal and breaks).
+const handleTowerButtonClick = function (button) {
+  const handler = button.getAttribute("data-handler");
+  const index = parseInt(button.getAttribute("data-index"), 10);
+  const status = parseInt(button.getAttribute("data-status"), 10);
+  if (handler === "auto") {
+    handleAutoTowerClick(index, status);
+  } else if (handler === "endgame") {
+    handleEndgameClick(index, status);
+  }
+}
+window.handleTowerButtonClick = handleTowerButtonClick;
+
 // Send manual fuel delta (positive or negative) from the UI.
 const addManualFuelDelta = function (delta) {
   websocket.send("manualFuel", { Count: delta });
