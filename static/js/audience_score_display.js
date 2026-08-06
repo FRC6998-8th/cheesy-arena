@@ -266,7 +266,7 @@ const handlePlaySound = function (sound) {
 
 const showFinalScore = function (callback, onLiveGraphicStart) {
   const showScore = function () {
-    $("#finalScore").show().transition({ queue: false, opacity: 1 }, 500, "ease", callback);
+    $("#finalScore").show().transition({ queue: false, opacity: 1 }, 1000, "ease", callback);
   };
   if (liveGraphic === undefined) {
     setTimeout(function () {
@@ -344,9 +344,19 @@ const transitionBlankToMatch = function (callback) {
 };
 
 const transitionBlankToScore = function (callback) {
-  hideOverlay(function () {
-    showScoreBackground();
-    showFinalScore(callback);
+  $(".blindsCenter.blank").css({ rotateY: "0deg" });
+  $(".blindsCenter.full").css({ rotateY: "-180deg" });
+  $(".blinds.right").transition({ queue: false, right: 0 }, 1000, "ease");
+  $(".blinds.left").transition({ queue: false, left: 0 }, 1000, "ease", function () {
+    $(".blinds.left").addClass("full");
+    $(".blinds.right").hide();
+    setTimeout(function () {
+      $(".blindsCenter.blank").transition({ queue: false, rotateY: "180deg" }, 500, "ease");
+      $(".blindsCenter.full").transition({ queue: false, rotateY: "0deg" }, 500, "ease", function () {
+        showScoreBackground();
+        showFinalScore(callback);
+      });
+    }, 200);
   });
 };
 

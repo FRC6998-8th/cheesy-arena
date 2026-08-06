@@ -43,11 +43,13 @@ body {
 
 #liveGraphic {
   background-color: transparent;
+  transform-origin: center center;
 }
 
 #finalScore {
   width: 96vw;
   max-width: 1600px;
+  transform-origin: center center;
 }
 
 .final-score {
