@@ -27,7 +27,7 @@ func (web *Web) audienceScoreDisplayHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	template, err := web.parseFiles("templates/audience_score_display.html")
+	template, err := web.parseFiles("templates/audience_final_score.html", "templates/audience_score_display.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return
